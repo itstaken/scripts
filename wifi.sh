@@ -114,7 +114,7 @@ automatic(){
         #see if ssid is in a config
         echo trying ${ssid}
         ssid=$(echo $ssid | cut -f2 -d\")
-        connect ${ssid}
+        connect "${ssid}"
         if [ "$?" -ne 0 ] ; then
             kill_wifi
         else
