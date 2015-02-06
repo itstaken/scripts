@@ -8,8 +8,8 @@
 # To ensure that the permissions are correct, add the following rule to udev,
 # possibly in a file named /etc/udev/rules.d/99-backlight.rules:
 
-# ACTION=="add", KERNEL=="pwm-backlight", SUBSYSTEM=="backlight", RUN+="/bin/chmod 0666 /sys/devices/soc0/pwm-backlight/backlight/pwm-backlight/brightness"
-# ACTION=="add", KERNEL=="pwm-backlight", SUBSYSTEM=="backlight", RUN+="/bin/chgrp users /sys/devices/soc0/pwm-backlight/backlight/pwm-backlight/brightness"
+# ACTION=="add", KERNEL=="pwm-backlight", SUBSYSTEM=="backlight", RUN+="/bin/chmod 0666 /sys/devices/soc0/pwm-backlight/backlight/pwm-backlight/brightness
+# ACTION=="add", KERNEL=="pwm-backlight", SUBSYSTEM=="backlight", RUN+="/bin/chgrp users /sys/devices/soc0/pwm-backlight/backlight/pwm-backlight/brightness
 
 PATH_BACKLIGHT=/sys/class/backlight/pwm-backlight
 PATH_BRIGHTNESS=${PATH_BACKLIGHT}/brightness
@@ -18,12 +18,17 @@ PATH_MAX_BRIGHTNESS=${PATH_BACKLIGHT}/max_brightness
 ##
 # Displays the usage for the script on stdout.
 usage(){
-    echo "This script allows controlling the brigness on the CB5-311."
-    echo ""
-    echo "Call it with the following options:"
-    echo "  -h - help - display this help"
-    echo "  -u - up - increase the brightness"
-    echo "  -d - down - decrease the brightness"
+    cat << "EOF"
+This script allows controlling the brightness on the CB5-311.
+
+Call it with the following options:
+  -h - help - display this help
+  -u - up - increase the brightness
+  -d - down - decrease the brightness
+
+Calling it without arguments displays the current brightness and exits.
+
+EOF
 }
 
 ##
