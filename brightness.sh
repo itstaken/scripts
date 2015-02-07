@@ -22,9 +22,10 @@ usage(){
 This script allows controlling the brightness on the CB5-311.
 
 Call it with the following options:
-  -h - help - display this help
-  -u - up - increase the brightness
-  -d - down - decrease the brightness
+  -h - help  - display this help
+  -u - up    - increase the brightness
+  -d - down  - decrease the brightness
+  -s value   - set the brightness to value
 
 Calling it without arguments displays the current brightness and exits.
 
