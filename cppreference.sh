@@ -2,7 +2,7 @@
 
 ##
 # This script tries to convert an offline archive of cppreference.com into a
-# browseable mardown version.
+# browseable markdown version.
 # This script cannot just be executed and expected to work, some setup is
 # required, first:
 #   1) Go here and download the link for the raw tar.gz version: 
