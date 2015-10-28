@@ -51,7 +51,7 @@ EOF
 fetch_essid(){
     local result=$(iwconfig 2>/dev/null | grep -o 'ESSID:".*"' | cut -f2 -d:)
     if [ $? -eq 0 ] ; then
-        echo ${result:1:-1}
+        echo "${result:1:-1}"
     else
         return 1
     fi
@@ -67,8 +67,8 @@ display_essid(){
 # Loops over all the .wpa files in $PATH_WPA and displays essids.
 display_saved(){
     echo "Saved networks:"
-    for f in ${PATH_WPA}/*.wpa ; do
-        echo "   $(grep ssid $f | cut -f2 -d\")"
+    for f in "${PATH_WPA}"/*.wpa ; do
+        echo "   $(grep ssid "$f" | cut -f2 -d\")"
     done
 }
 
@@ -78,7 +78,7 @@ display_saved(){
 connect(){
     local ESSID="$1"
     #FIXME: does not take into account matching ssids with different passwords
-    grep -l ssid=\""${ESSID}"\" ${PATH_WPA}/*.wpa 2>&1>/dev/null
+    grep -l ssid=\""${ESSID}"\" "${PATH_WPA}"/*.wpa 2>&1>/dev/null
     if [ "$?" -ne 0 ] ; then
         echo "Unknown essid, bailing..."
         return 1
@@ -168,10 +168,10 @@ while getopts "aehikls:" OPT ; do
             ACTION=display_saved
             ;;
         p)
-            PATH_WPA="${OPTARG}"
+            PATH_WPA=${OPTARG}
             ;;
         s)
-            ARGS="${OPTARG}"
+            ARGS=${OPTARG}
             ACTION=connect
             ;;
         ?)
