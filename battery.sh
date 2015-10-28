@@ -8,8 +8,16 @@
 # Currently it just displays the current charge percent.
 # I haven't decided what other details would be useful.
 
-PATH_BATTERY=/sys/class/power_supply/sbs-5-000b/
-PATH_BATTERY_CAPACITY="${PATH_BATTERY}"/capacity
+POWER_SUPPLY_CLASS=/sys/class/power_supply/
+HAPPY=1
+if [ -d ${POWER_SUPPLY_CLASS} ] ; then
+    for f in ${POWER_SUPPLY_CLASS}/* ; do
+        CAPACITY_PATH=${f}/capacity
+        if [ -f "${CAPACITY_PATH}" ] ; then
+            cat "${CAPACITY_PATH}"
+            HAPPY=0
+        fi
+    done
+fi
 
-#
-cat "${PATH_BATTERY_CAPACITY}"
+exit ${HAPPY}
