@@ -12,8 +12,8 @@
 # ACTION=="add", KERNEL=="pwm-backlight", SUBSYSTEM=="backlight", RUN+="/bin/chgrp users /sys/devices/soc0/pwm-backlight/backlight/pwm-backlight/brightness
 
 PATH_BACKLIGHT=/sys/class/backlight/pwm-backlight
-PATH_BRIGHTNESS="${PATH_BACKLIGHT}"/brightness
-PATH_MAX_BRIGHTNESS="${PATH_BACKLIGHT}"/max_brightness
+PATH_BRIGHTNESS=${PATH_BACKLIGHT}/brightness
+PATH_MAX_BRIGHTNESS=${PATH_BACKLIGHT}/max_brightness
 
 ##
 # Displays the usage for the script on stdout.
@@ -82,7 +82,7 @@ brightness_down(){
         NEW=0
     fi
 
-    set_brightness ${NEW}
+    set_brightness "${NEW}"
 }
 
 while getopts "huds:" OPT ; do
