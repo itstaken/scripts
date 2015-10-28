@@ -10,8 +10,8 @@
 
 POWER_SUPPLY_CLASS=/sys/class/power_supply/
 HAPPY=1
-if [ -d ${POWER_SUPPLY_CLASS} ] ; then
-    for f in ${POWER_SUPPLY_CLASS}/* ; do
+if [ -d "${POWER_SUPPLY_CLASS}" ] ; then
+    for f in "${POWER_SUPPLY_CLASS}"/* ; do
         CAPACITY_PATH=${f}/capacity
         if [ -f "${CAPACITY_PATH}" ] ; then
             cat "${CAPACITY_PATH}"
