@@ -60,7 +60,7 @@ fi
 ##
 # Enumerate all devices and create an etnry for them...
 while read -r -d $'\n' ETHER; do
-ifconfig "${ETHER}" | grep 'inet addr' &> /dev/null
+ifconfig "${ETHER}" | grep 'Link' | grep -v 'Local Loopback' &> /dev/null
 if [ "$?" -eq 0 ] ; then
 cat << EOF_eth
 \${if_up ${ETHER}}
