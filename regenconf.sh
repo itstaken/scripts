@@ -40,7 +40,7 @@ echo TEXT
 battery.sh &>/dev/null
 if [ $? -eq 0 ] ; then
 cat << "EOF_battery"
-Battery: ${color green}${execi 60 battery.sh}${color white}%
+Battery: ${color green}${execi 60 battery.sh}
 EOF_battery
 fi
 
