@@ -40,14 +40,15 @@ echo TEXT
 battery.sh &>/dev/null
 if [ $? -eq 0 ] ; then
 cat << "EOF_battery"
-Battery: ${color green}${execi 60 battery.sh}${color white}%
+Battery: ${color green}${execi 60 battery.sh}${color white}
 EOF_battery
 fi
 
 ##
 # If the system uses wifi... and has my wifi script
-wifi=$(iwconfig 2>/dev/null | grep ESSID: | awk '{print $1}')
+wifi=$(iwconfig 2>/dev/null | grep ESSID:)
 if [ $? -eq 0 ] ; then
+    wifi=$(echo $wifi | awk '{print $1}')
     wifi.sh -e &> /dev/null
     if [ $? -eq 0 ] ; then
         cat << EOF_wifi
