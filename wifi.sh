@@ -49,7 +49,7 @@ EOF
 ##
 # Fetches the currently connected essid.
 fetch_essid(){
-    local result=$(iwconfig 2>/dev/null | grep -o 'ESSID:".*"' | cut -f2 -d:)
+    local result=$(/sbin/iwconfig 2>/dev/null | grep -o 'ESSID:".*"' | cut -f2 -d:)
     if [ $? -eq 0 ] ; then
         echo "${result:1:-1}"
     else
@@ -85,7 +85,7 @@ connect(){
     fi
     for FILE in $(grep -l ssid=\""${ESSID}"\" "${PATH_WPA}"/*.wpa) ; do
         echo "Found ESSID ${ESSID} in $FILE"
-        sudo wpa_supplicant -Dwext -i"${IFACE}" -c "${FILE}" -B
+        sudo wpa_supplicant -Dwext,nl80211 -i"${IFACE}" -c "${FILE}" -B
         sudo dhclient "${IFACE}"
         return 0
     done
@@ -103,13 +103,13 @@ kill_wifi(){
     while [ "$?" -eq 0 ] ; do
         sudo killall dhclient 2>/dev/null
     done
-    sudo ifconfig "${IFACE}" down
+    sudo ip link set "${IFACE}" down
 }
 
 ##
 # Displays current iwconfig status
 info(){
-    local ESSID=$(iwconfig mlan0 | grep -o ESSID:".*")
+    local ESSID=$(/sbin/iwconfig ${IFACE} | grep -o ESSID:".*")
     if [ "$?" -eq 0 ] ; then
         echo "wifi connected: "${ESSID}""
     else
@@ -127,7 +127,7 @@ interactive(){
 
 automatic(){
     kill_wifi
-    sudo ifconfig "${IFACE}" up
+    sudo ip link set "${IFACE}" up
     SAVEIFS="$IFS"
     export IFS="$(echo -ne '\n\b')"
     for ssid in $(sudo iwlist "${IFACE}" scanning | grep ESSID | cut -f2 -d:) ; do
