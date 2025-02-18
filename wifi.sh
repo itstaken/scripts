@@ -19,6 +19,7 @@ This script facilitates connecting to saved access points.  It does not use
 Network Manager.
 
 Call it with the following options:
+    -a - automatic    - connect to a network automatically
     -h - help         - display this help
     -i - interactive  - configure wifi interactively
     -l - list         - list saved access points
@@ -68,6 +69,7 @@ connect(){
         echo "Found ESSID ${ESSID} in $FILE"
         sudo wpa_supplicant -Dwext -i"${IFACE}" -c "${FILE}" -B
         sudo dhclient "${IFACE}"
+        return 0
     done
     return 1
 }
@@ -105,8 +107,29 @@ interactive(){
     connect ${SSID}
 }
 
-while getopts "hikls:" OPT ; do
+automatic(){
+    kill_wifi
+    sudo ifconfig ${IFACE} up
+    for ssid in $(sudo iwlist ${IFACE} scanning | grep ESSID | cut -f2 -d:) ; do
+        #see if ssid is in a config
+        echo trying ${ssid}
+        ssid=$(echo $ssid | cut -f2 -d\")
+        connect ${ssid}
+        if [ "$?" -ne 0 ] ; then
+            kill_wifi
+        else
+            return 0
+        fi
+    done
+    return 1
+}
+
+while getopts "ahikls:" OPT ; do
     case ${OPT} in
+        a)
+            automatic
+            exit
+            ;;
         h)
             usage
             exit
