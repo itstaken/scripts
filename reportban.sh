@@ -17,22 +17,20 @@
 
 ##
 # Dies if the provided command is not in the path
-die_without(){
-    which "$1"  2>&1 > /dev/null
-    if [ "$?" -ne 0 ] ; then
-        echo "This script requires the $1 command to run." >&2
-        exit -1
-    fi
+die_without() {
+	if ! which "$1" &>/dev/null; then
+		echo "This script requires the $1 command to run." >&2
+		exit 1
+	fi
 }
-
 
 die_without geoiplookup
 die_without gnuplot
 
-if [ "$#" -eq 0 ] ; then
-   LOGFILE="/var/log/fail2ban.log"
+if [ "$#" -eq 0 ]; then
+	LOGFILE="/var/log/fail2ban.log"
 else
-    LOGFILE="$1"
+	LOGFILE="$1"
 fi
 
 echo "Using $LOGFILE as log file..." >&2
@@ -42,20 +40,20 @@ echo "Using $LOGFILE as log file..." >&2
 # addresses found.
 #    @param LOGFILE The file that will be parsed for IP addresses.
 #    @return Returns a list of "IP: CC, Country of Origin" lines.
-produce_countries(){
-    local LOGFILE="${1}"
-    grep -o -E '(([0-9]+)\.){3}[0-9]+' "${LOGFILE}"| sort -u  | while read IP ; do
-        echo "Looking up info for $IP..." >&2
-        INFO=$(geoiplookup "${IP}")
-        echo "${INFO}" | grep "not found" 2>/dev/null 1>/dev/null
-        if [ "$?" -eq 0 ] ; then
-            echo "Unable to find "$IP"" >&2
-            echo ""${IP}": 00, **unknown**"
-            continue
-        fi
-        INFO="$(echo ${INFO} | cut -f2 -d:)"
-        echo ""${IP}":"${INFO}""
-    done
+produce_countries() {
+	local LOGFILE="${1}"
+	grep -o -E '(([0-9]+)\.){3}[0-9]+' "${LOGFILE}" | sort -u | while read -r IP; do
+		echo "Looking up info for $IP..." >&2
+		INFO=$(geoiplookup "${IP}")
+		echo "${INFO}" | head -n 1 >&2
+		if echo "${INFO}" | grep "not found" 2>/dev/null 1>/dev/null; then
+			echo "Unable to find ${IP}" >&2
+			echo "${IP}: 00, **unknown**"
+			continue
+		fi
+		INFO=$(echo "${INFO}" | head -n 1 | cut -f2 -d:)
+		echo "${IP}:${INFO}"
+	done
 }
 
 ##
@@ -64,47 +62,50 @@ produce_countries(){
 #   @param INFILE The file that will be parsed for country IP and Country
 #          Codes.
 #   @return Returns a list of CC: count lines.
-produce_counts(){
-    local INFILE="${1}"
-    cut -f2- -d, "${INFILE}"  |
-        cut -f2 -d: |
-        sort -u |
-        while read LINE ; do
-            (echo "${LINE}:" ; grep "${LINE}" "${INFILE}" | wc -l) | xargs
-        done
+produce_counts() {
+	local INFILE="${1}"
+	cut -f2- -d, "${INFILE}" |
+		cut -f2 -d: |
+		sort -u |
+		while read -r LINE; do
+			(
+				echo "${LINE}:"
+				grep -c "${LINE}" "${INFILE}"
+			) | xargs
+		done
 }
 
 ##
 # Create a temporary file for multiply processing input
-t="$(tempfile)"
-produce_countries "${LOGFILE}" > "${t}"
+t="$(mktemp)"
+produce_countries "${LOGFILE}" >"${t}"
 
 ##
 # Create a summary file that includes country: count
-produce_counts "${t}" > "${t}".summary
+produce_counts "${t}" >"${t}".summary
 
 ##
 # Sort it for use later in a graph
-sort -r -t: -g -k2 "${t}".summary > "${t}".sorted
+sort -r -t: -g -k2 "${t}".summary >"${t}".sorted
 
 ##
 # Produce output that can be ingested via gnuplot
-cat "${t}".sorted | while read LINE ; do
-    echo \"$(echo $LINE | cut -f1 -d:)\" $(echo $LINE | cut -f2 -d:)
-done > "${t}.data"
+while read -r LINE; do
+	echo "\"$(echo "${LINE}" | cut -f1 -d:)\" $(echo "${LINE}" | cut -f2 -d:)"
+done >"${t}.data" <"${t}".sorted
 
 ##
 # Width of the output image will be based on number of countries*25
 WIDTH=$(wc -l "${t}".summary | awk '{print $1}')
-WIDTH=$(($WIDTH*27))
+WIDTH=$((WIDTH * 27))
 
 ##
 # Height will depend on number of attacks * 3
 ATTACKS="$(wc -l "${t}" | awk '{print $1}')"
-if [ "$ATTACKS" -lt  100 ] ; then
-    HEIGHT=640
+if [ "${ATTACKS}" -lt 100 ]; then
+	HEIGHT=640
 else
-    HEIGHT=$(($ATTACKS*3))
+	HEIGHT=$((ATTACKS * 3))
 fi
 
 ##
@@ -113,25 +114,27 @@ EXT="svg"
 
 ##
 # Build a simple gnuplot script that generates file output
-echo "set terminal ${EXT} size ${WIDTH},${HEIGHT} fname 'Verdana' fsize 16" > "${t}".plot
-echo "set output \"${t}.${EXT}\"" >> "${t}".plot
-echo "set style fill solid">> "${t}".plot
-echo "set key off">> "${t}".plot
-echo "set xtics rotate">> "${t}".plot
-echo "set ylabel \"Number of Attacks\"">> "${t}".plot
-echo "set xlabel \"Country of Origin\"">> "${t}".plot
-echo "plot \"${t}.data\" using 2: xtic(1) with histogram">> "${t}".plot
+(
+	echo "set terminal ${EXT} size ${WIDTH},${HEIGHT} fname 'Verdana'"
+	echo "set output \"${t}.${EXT}\""
+	echo "set style fill solid"
+	echo "set key off"
+	echo "set xtics rotate"
+	echo "set ylabel \"Number of Attacks\""
+	echo "set xlabel \"Country of Origin\""
+	echo "plot \"${t}.data\" using 2: xtic(1) with histogram"
+) >"${t}".plot
 gnuplot "${t}".plot
 
-if [ -f attacks."${EXT}" ] ; then
-    mv "${t}"."${EXT}" attacks."${EXT}"
-    echo "Produced attacks."${EXT}" file." >&2
-    rm "${t}"
-    rm "${t}".summary
-    rm "${t}".data
-    rm "${t}".sorted
-    rm "${t}".plot
+if [ -f "${t}"."${EXT}" ]; then
+	mv "${t}"."${EXT}" attacks."${EXT}"
+	echo "Produced attacks.${EXT} file." >&2
+	rm "${t}"
+	rm "${t}".summary
+	rm "${t}".data
+	mv "${t}".sorted attacks.sorted
+	rm "${t}".plot
 else
-    echo "Failed to produce output file... missing something?" >&2
-    echo "Leaving files behind for debugging: ${t}, ${t}.sorted, ${t}.data, ${t}.plot" >&2
+	echo "Failed to produce output file... missing something?" >&2
+	echo "Leaving files behind for debugging: ${t}, ${t}.sorted, ${t}.data, ${t}.plot" >&2
 fi
