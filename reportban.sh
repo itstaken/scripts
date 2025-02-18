@@ -122,6 +122,7 @@ EXT="svg"
 	echo "set xtics rotate"
 	echo "set ylabel \"Number of Attacks\""
 	echo "set xlabel \"Country of Origin\""
+	echo "set yrange [ 0 : * ]"
 	echo "plot \"${t}.data\" using 2: xtic(1) with histogram"
 ) >"${t}".plot
 gnuplot "${t}".plot
