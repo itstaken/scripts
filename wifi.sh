@@ -85,7 +85,7 @@ kill_wifi(){
     while [ "$?" -eq 0 ] ; do
         sudo killall dhclient 2>/dev/null
     done
-    sudo ifconfig ${IFACE} down
+    sudo ifconfig "${IFACE}" down
 }
 
 ##
@@ -93,7 +93,7 @@ kill_wifi(){
 info(){
     local ESSID=$(iwconfig mlan0 | grep -o ESSID:".*")
     if [ "$?" -eq 0 ] ; then
-        echo "wifi connected: $ESSID"
+        echo "wifi connected: "${ESSID}""
     else
         echo "wifi not connected"
     fi
@@ -104,18 +104,18 @@ interactive(){
     echo -ne "Enter an essid to connect: "
     local SSID
     read SSID
-    connect ${SSID}
+    connect "${SSID}"
 }
 
 automatic(){
     kill_wifi
-    sudo ifconfig ${IFACE} up
+    sudo ifconfig "${IFACE}" up
     SAVEIFS="$IFS"
     export IFS="$(echo -ne '\n\b')"
-    for ssid in $(sudo iwlist ${IFACE} scanning | grep ESSID | cut -f2 -d:) ; do
+    for ssid in $(sudo iwlist "${IFACE}" scanning | grep ESSID | cut -f2 -d:) ; do
         #see if ssid is in a config
         echo trying "${ssid}"
-        ssid=$(echo "$ssid" | cut -f2 -d\")
+        ssid=$(echo "${ssid}" | cut -f2 -d\")
         connect "${ssid}"
         if [ "$?" -ne 0 ] ; then
             kill_wifi
@@ -123,12 +123,12 @@ automatic(){
             return 0
         fi
     done
-    IFS="$SAVEIFS"
+    IFS="${SAVEIFS}"
     return 1
 }
 
 while getopts "ahikls:" OPT ; do
-    case ${OPT} in
+    case "${OPT}" in
         a)
             automatic
             exit
@@ -147,10 +147,10 @@ while getopts "ahikls:" OPT ; do
             ACTION=display_saved
             ;;
         p)
-            PATH_WPA=${OPTARG}
+            PATH_WPA="${OPTARG}"
             ;;
         s)
-            ARGS=${OPTARG}
+            ARGS="${OPTARG}"
             ACTION=connect
             ;;
         ?)
@@ -162,4 +162,4 @@ done
 shift $((OPTIND-1))
 
 ACTION=${ACTION:-info}
-${ACTION} "${ARGS}"
+"${ACTION}" "${ARGS}"

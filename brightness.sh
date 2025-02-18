@@ -12,8 +12,8 @@
 # ACTION=="add", KERNEL=="pwm-backlight", SUBSYSTEM=="backlight", RUN+="/bin/chgrp users /sys/devices/soc0/pwm-backlight/backlight/pwm-backlight/brightness
 
 PATH_BACKLIGHT=/sys/class/backlight/pwm-backlight
-PATH_BRIGHTNESS=${PATH_BACKLIGHT}/brightness
-PATH_MAX_BRIGHTNESS=${PATH_BACKLIGHT}/max_brightness
+PATH_BRIGHTNESS="${PATH_BACKLIGHT}"/brightness
+PATH_MAX_BRIGHTNESS="${PATH_BACKLIGHT}"/max_brightness
 
 ##
 # Displays the usage for the script on stdout.
@@ -35,13 +35,13 @@ EOF
 ##
 # Gets the current brightness, echoed on stdout.
 get_brightness(){
-    cat ${PATH_BRIGHTNESS}
+    cat "${PATH_BRIGHTNESS}"
 }
 
 ##
 # Gets the max brightness, echoed on stdout.
 get_max_brightness(){
-    cat ${PATH_MAX_BRIGHTNESS}
+    cat "${PATH_MAX_BRIGHTNESS}"
 }
 
 ##
@@ -51,9 +51,9 @@ set_brightness(){
     local NEW=$1
     local MAX=$(get_max_brightness)
 
-    if [ ${NEW} -ge 0 ] ; then
-        if [ ${NEW} -lt ${MAX} ] ; then
-            echo ${NEW} > ${PATH_BRIGHTNESS}
+    if [ "${NEW}" -ge 0 ] ; then
+        if [ "${NEW}" -lt "${MAX}" ] ; then
+            echo "${NEW}" > "${PATH_BRIGHTNESS}"
         fi
     fi
 }
@@ -65,11 +65,11 @@ brightness_up(){
     local MAX=$(get_max_brightness)
     local NEW=$((OLD+1))
 
-    if [ ${NEW} -gt ${MAX} ] ; then
-        NEW=${MAX}
+    if [ "${NEW}" -gt "${MAX}" ] ; then
+        NEW="${MAX}"
     fi
 
-    set_brightness ${NEW}
+    set_brightness "${NEW}"
 }
 
 ##
@@ -78,7 +78,7 @@ brightness_down(){
     local OLD=$(get_brightness)
     local NEW=$((OLD-1))
 
-    if [ ${NEW} -lt 0 ] ; then
+    if [ "${NEW}" -lt 0 ] ; then
         NEW=0
     fi
 
@@ -86,7 +86,7 @@ brightness_down(){
 }
 
 while getopts "huds:" OPT ; do
-    case ${OPT} in
+    case "${OPT}" in
         h)
             usage
             exit
@@ -101,7 +101,7 @@ while getopts "huds:" OPT ; do
             ;;
 
         s)
-            set_brightness $OPTARG
+            set_brightness "$OPTARG"
             exit
             ;;
         ?)
@@ -112,4 +112,4 @@ while getopts "huds:" OPT ; do
 done
 shift $((OPTIND-1))
 
-echo $(get_brightness) / $(get_max_brightness)
+echo "$(get_brightness)" / "$(get_max_brightness)"

@@ -9,7 +9,7 @@
 # I haven't decided what other details would be useful.
 
 PATH_BATTERY=/sys/class/power_supply/sbs-5-000b/
-PATH_BATTERY_CAPACITY=${PATH_BATTERY}/capacity
+PATH_BATTERY_CAPACITY="${PATH_BATTERY}"/capacity
 
 #
-cat ${PATH_BATTERY_CAPACITY}
+cat "${PATH_BATTERY_CAPACITY}"
