@@ -20,12 +20,13 @@ Network Manager.
 
 Call it with the following options:
     -a - automatic    - connect to a network automatically
+    -e - essid        - display the essid of any current connections
     -h - help         - display this help
     -i - interactive  - configure wifi interactively
-    -l - list         - list saved access points
-    -s SSID           - specify saved ssid
-    -p PATH           - specify alternate directory for wpa files
     -k - kill         - stop wpa/wifi activity
+    -l - list         - list saved access points
+    -p PATH           - specify alternate directory for wpa files
+    -s SSID           - specify saved ssid
 
 Call it with no arguments for info.
 
@@ -43,6 +44,23 @@ To use a different directory for storing wpa files, specify the new path with
 
 This will make the script look for .wpa files in ~/Wifi that contain essid foo.
 EOF
+}
+
+##
+# Fetches the currently connected essid.
+fetch_essid(){
+    local result=$(iwconfig 2>/dev/null | grep -o 'ESSID:".*"' | cut -f2 -d:)
+    if [ $? -eq 0 ] ; then
+        echo ${result:1:-1}
+    else
+        return 1
+    fi
+}
+
+##
+# Displays the current connect essid.
+display_essid(){
+    echo $(fetch_essid)
 }
 
 ##
@@ -127,11 +145,14 @@ automatic(){
     return 1
 }
 
-while getopts "ahikls:" OPT ; do
+while getopts "aehikls:" OPT ; do
     case "${OPT}" in
         a)
             automatic
             exit
+            ;;
+        e)
+            ACTION=display_essid
             ;;
         h)
             usage
