@@ -48,8 +48,9 @@ fi
 # If the system uses wifi... and has my wifi script
 wifi=$(iwconfig 2>/dev/null | grep ESSID: | awk '{print $1}')
 if [ $? -eq 0 ] ; then
-    if [ -x wifi.sh ] ; then
-cat << EOF_wifi
+    wifi.sh -e &> /dev/null
+    if [ $? -eq 0 ] ; then
+        cat << EOF_wifi
 \${if_up ${wifi}}
 Wifi: \${color red}\${execi 30 wifi.sh -e}\${color white}
 \${endif}
