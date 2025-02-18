@@ -32,38 +32,38 @@
 #   └─────────────┴─────────────┘
 #
 
-
 echo TEXT
 
 ##
 # IF the system uses battery...
 battery.sh &>/dev/null
-if [ $? -eq 0 ] ; then
-cat << "EOF_battery"
-Battery: ${color green}${execi 60 battery.sh}
+if [ $? -eq 0 ]; then
+	cat <<"EOF_battery"
+Battery: ${color green}${execi 60 battery.sh}${color white}
 EOF_battery
 fi
 
 ##
 # If the system uses wifi... and has my wifi script
-wifi=$(iwconfig 2>/dev/null | grep ESSID: | awk '{print $1}')
-if [ $? -eq 0 ] ; then
-    wifi.sh -e &> /dev/null
-    if [ $? -eq 0 ] ; then
-        cat << EOF_wifi
+wifi=$(iwconfig 2>/dev/null | grep ESSID:)
+if [ $? -eq 0 ]; then
+	wifi=$(echo $wifi | awk '{print $1}')
+	wifi.sh -e &>/dev/null
+	if [ $? -eq 0 ]; then
+		cat <<EOF_wifi
 \${if_up ${wifi}}
 Wifi: \${color red}\${execi 30 wifi.sh -e}\${color white}
 \${endif}
 EOF_wifi
-    fi
+	fi
 fi
 
 ##
 # Enumerate all devices and create an etnry for them...
 while read -r -d $'\n' ETHER; do
-ifconfig "${ETHER}" | grep 'Link' | grep -v 'Local Loopback' &> /dev/null
-if [ "$?" -eq 0 ] ; then
-cat << EOF_eth
+	ifconfig "${ETHER}" | grep 'Link' | grep -v 'Local Loopback' &>/dev/null
+	if [ "$?" -eq 0 ]; then
+		cat <<EOF_eth
 \${if_up ${ETHER}}
 ${ETHER}: up, addr \$alignr \${addr ${ETHER}}
 Up \${alignr} Down
@@ -73,6 +73,6 @@ Up \${alignr} Down
 ${ETHER}: down
 \${endif}
 EOF_eth
-fi
+	fi
 
 done < <(ifconfig -a | grep Ethernet | awk '{print $1}')
