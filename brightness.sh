@@ -61,6 +61,7 @@ set_brightness(){
 # Turn the brightness up by one point.
 brightness_up(){
     local OLD=$(get_brightness)
+    local MAX=$(get_max_brightness)
     local NEW=$((OLD+1))
 
     if [ ${NEW} -gt ${MAX} ] ; then
