@@ -60,12 +60,12 @@ display_saved(){
 connect(){
     local ESSID="$1"
     #FIXME: does not take into account matching ssids with different passwords
-    grep -l ssid=\"${ESSID}\" ${PATH_WPA}/*.wpa 2>&1>/dev/null
+    grep -l ssid=\""${ESSID}"\" ${PATH_WPA}/*.wpa 2>&1>/dev/null
     if [ "$?" -ne 0 ] ; then
         echo "Unknown essid, bailing..."
         return 1
     fi
-    for FILE in $(grep -l ssid=\"${ESSID}\" ${PATH_WPA}/*.wpa) ; do
+    for FILE in $(grep -l ssid=\""${ESSID}"\" "${PATH_WPA}"/*.wpa) ; do
         echo "Found ESSID ${ESSID} in $FILE"
         sudo wpa_supplicant -Dwext -i"${IFACE}" -c "${FILE}" -B
         sudo dhclient "${IFACE}"
@@ -110,10 +110,12 @@ interactive(){
 automatic(){
     kill_wifi
     sudo ifconfig ${IFACE} up
+    SAVEIFS="$IFS"
+    export IFS="$(echo -ne '\n\b')"
     for ssid in $(sudo iwlist ${IFACE} scanning | grep ESSID | cut -f2 -d:) ; do
         #see if ssid is in a config
-        echo trying ${ssid}
-        ssid=$(echo $ssid | cut -f2 -d\")
+        echo trying "${ssid}"
+        ssid=$(echo "$ssid" | cut -f2 -d\")
         connect "${ssid}"
         if [ "$?" -ne 0 ] ; then
             kill_wifi
@@ -121,6 +123,7 @@ automatic(){
             return 0
         fi
     done
+    IFS="$SAVEIFS"
     return 1
 }
 
@@ -159,4 +162,4 @@ done
 shift $((OPTIND-1))
 
 ACTION=${ACTION:-info}
-${ACTION} ${ARGS}
+${ACTION} "${ARGS}"
