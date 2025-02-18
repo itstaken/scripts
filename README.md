@@ -9,3 +9,5 @@ I want to control.
 * `brightness.sh` - controls/displays the brightness on CB5-311
 * `cppreference.sh` - extracts cppreference archive into mkd files
 * `wifi.sh` - (lamely) controls the wireless on CB5-311
+* `reportban.sh` - script that uses gnuplot and geoip to graph fail2ban banned
+  ips
