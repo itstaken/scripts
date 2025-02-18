@@ -19,7 +19,7 @@ DEVICE_NO=6
 get_state(){
     local STATE=0
     if [ -f "${STATE_FILE}" ] ; then
-        STATE=$(awk '{print $1}' ${STATE_FILE})
+        STATE=$(awk '{print $1}' "${STATE_FILE}")
         if [ "${STATE}" -ne 1 ] ; then
             STATE=0
         fi
